@@ -1,0 +1,28 @@
+#!/usr/bin/python
+import os
+import shutil
+import time
+import sys
+import glob
+import json
+import xmltodict
+srcPath = '/ter/tojsn'
+desPath = '/ter/afterjsn'
+
+for files in glob.glob(os.path.join(srcPath, '*.rpt')):
+ with open(os.path.join(os.getcwd(), files), 'r') as f:
+    data_dict = xmltodict.parse(f.read())
+    f.close()
+    #sample filname: /ter/tojsn/4W001.130101798.2065090.rpt
+    name,ext = os.path.splitext(files)
+    b=files.split('.rpt')[0]
+    c=b.split('/')[5]
+    # generate the object using json.dumps()
+    # corresponding to json data
+    json_data = json.dumps(data_dict)
+    # Write the json data to output
+    # json file
+    with open('/ter/afterjsn/'+c+'.json', "w") as json_file:
+       json_file.write(json_data)
+       json_file.close()
+    os.remove(files)
