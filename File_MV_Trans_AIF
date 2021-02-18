@@ -1,0 +1,145 @@
+###########################################################################################################
+#          Note :    Need to give the job name in the dat files                                           #
+#                                                                                                         #
+#          Sample run :  python  File_MV_Trans_AIF.py                                                  #
+###########################################################################################################
+
+#!/usr/bin/python
+import os
+import shutil
+import time
+import sys
+import commands
+import pwd
+
+b = commands.getstatusoutput('ps -ef | grep File_MV_Trans_AIF.py |wc -l')
+c = int(b[1])
+user = ""
+user1 = ""
+user2 = ""
+user3 = ""
+#Getting the log file name
+
+timestr = time.strftime("%Y%m%d")
+log_filenm = '/trans/LOGS/'+'OB_FILE_MV_AIF'+timestr+'.log'
+fle = open(log_filenm,'a+')
+
+if c > 3:
+ print c
+ fle.write('\n --------------------------------------------------------------------------------------\n')
+ fle.write('\n Script File_MV_Trans_AIF.py is running already '+time.strftime("%Y%m%d-%H%M%S%s")+'\n')
+ fle.write('\n --------------------------------------------------------------------------------------\n')
+else:
+ print c
+ fle.write('\n--------------------------------------------------------------------------------------------\n')
+ fle.write('\n--------- Started to move the file for this run '+time.strftime("%Y%m%d-%H%M%S%s")+' -------\n')
+
+ Job_TT = []
+ Job_MT = []
+ Job_DT = []
+
+
+ with open('/trans/custom/table/TT_trans3_AIF_Job.dat') as f:
+  Job_TT = f.read().splitlines()
+  print(Job_TT)
+
+ with open('/trans/custom/table/MT_trans1_AIF_Job.dat') as f1:
+  Job_MT = f1.read().splitlines()
+  print(Job_MT)
+
+ with open('/trans/custom/table/DT_trans_HOLD_AIF_Job.dat') as f2:
+  Job_DT = f2.read().splitlines()
+  print(Job_DT)
+
+ file_dict = {}
+ path = '/trans/AIF/ASCII/scan/' # Get current working directory
+ direc = os.listdir(path)
+ # Iterate over files in directory
+ for f in direc:
+     # Open them and assign them to file_dict
+     name,ext = os.path.splitext(f)
+     a=f.split('.')[0]
+     file_dict[f] = a
+ # Compare the Job names with Files in directory
+
+ for k,v in file_dict.iteritems():
+  src = '/trans/AIF/ASCII/scan/'
+  src+=k
+
+  try:
+         if v in Job_MT:
+            # print(k)
+            # print(v)
+            # print("This is 1st great")
+             dst = '/trans/t1/AIF/ASCII/'
+             dst+=k
+             src = '/trans/AIF/ASCII/scan/'
+             src+=k
+             stat_info = os.stat(src)
+             uid = stat_info.st_uid
+             user = pwd.getpwuid(uid)[0]
+             fle.write('\n Moving the file to '+dst +' With the UserName: ' +user)
+             #fle.write('\n Moving the file to '+dst)
+             if os.path.isfile(src):
+              shutil.move(src,dst)
+              fle.write('\n File moved to  '+dst)
+             else:
+              fle.write('\n File missing or picked by other application '+dst)
+         elif v in Job_TT:
+            # print(k)
+            # print("This is 2nd great")
+             dst1 = '/trans/t3/AIF/ASCII/'
+             dst1+=k
+             src1 = '/trans/AIF/ASCII/scan/'
+             src1+=k
+             stat_info1 = os.stat(src1)
+             uid1 = stat_info1.st_uid
+             user1 = pwd.getpwuid(uid1)[0]
+             fle.write('\n Moving the file to '+dst1 +' With the UserName: ' +user1)
+             #fle.write('\n Moving the file to '+dst1)
+             if os.path.isfile(src):
+              shutil.move(src,dst1)
+              fle.write('\n File moved to  '+dst1)
+             else:
+              fle.write('\n File missing or picked by other application '+dst1)
+         elif v in Job_DT:
+            # print(k)
+            # print("This is 3rd great")
+             dst2 = '/trans/t1/AIF/ASCII/HOLD/'
+             dst2+=k
+             src2 = '/trans/AIF/ASCII/scan/'
+             src2+=k
+             stat_info2 = os.stat(src2)
+             uid2 = stat_info2.st_uid
+             user2 = pwd.getpwuid(uid2)[0]
+             fle.write('\n Moving the file to '+dst2 +' With the UserName: ' +user2)
+             #fle.write('\n Moving the file to '+dst2)
+             if os.path.isfile(src):
+              shutil.move(src,dst2)
+              fle.write('\n File moved to  '+dst2)
+             else:
+              fle.write('\n File missing or picked by other application '+dst2)
+         else:
+            # print(k)
+            # print("This is 4th great")
+             dst3 = '/trans/t2/AIF/ASCII/'
+             dst3+=k
+             src3 = '/trans/AIF/ASCII/scan/'
+             src3+=k
+             stat_info3 = os.stat(src3)
+             uid3 = stat_info3.st_uid
+             user3 = pwd.getpwuid(uid3)[0]
+             fle.write('\n Moving the file to '+dst3 +' With the UserName: ' +user3)
+             #fle.write('\n Moving the file to '+dst3)
+             if os.path.isfile(src):
+              shutil.move(src,dst3)
+              fle.write('\n File moved to  '+dst3)
+             else:
+              fle.write('\n File missing or picked by other application '+dst3)
+  except Exception as errr:
+         fle.write('\n Something wrong while moving this files, Check for the file has processed  '+k)
+  except IOError, e:
+         fle.write('\n There was an issue with shutil.move for file   '+k)
+ fle.write('\n-------------------------- End of the run '+time.strftime("%Y%m%d-%H%M%S%s")+' -------------------------\n')
+ fle.write('\n--------------------------------------------------------------------------------------------------------\n')
+ fle.close()
